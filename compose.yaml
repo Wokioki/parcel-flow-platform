@@ -1,0 +1,5 @@
+  cat > compose.yaml <<'EOF'
+  name: parcel-flow-platform
+
+  services: {}
+    EOF
