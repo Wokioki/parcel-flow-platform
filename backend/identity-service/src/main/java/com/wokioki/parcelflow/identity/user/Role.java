@@ -1,4 +1,6 @@
 package com.wokioki.parcelflow.identity.user;
 
-public class Role {
+public enum Role {
+    CUSTOMER,
+    OPERATOR
 }
