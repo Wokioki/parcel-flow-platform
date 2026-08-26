@@ -15,6 +15,11 @@ spring:
   flyway:
     enabled: true
 
+security:
+  jwt:
+    issuer: parcel-flow-identity
+    access-token-ttl: 15m
+
 server:
   port: 8081
 
