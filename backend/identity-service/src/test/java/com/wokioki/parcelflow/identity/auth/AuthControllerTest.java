@@ -1,5 +1,6 @@
 package com.wokioki.parcelflow.identity.auth;
 
+import com.wokioki.parcelflow.identity.auth.dto.LoginResponse;
 import com.wokioki.parcelflow.identity.auth.dto.RegisterResponse;
 import com.wokioki.parcelflow.identity.auth.exception.EmailAlreadyExistsException;
 import com.wokioki.parcelflow.identity.user.Role;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -98,5 +100,60 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.status").value(409))
             .andExpect(jsonPath("$.message")
                 .value("User with email 'john@example.com' already exists"));
+    }
+
+    @Test
+    void shouldLoginUser() throws Exception {
+        when(loginService.login(any()))
+            .thenReturn(new LoginResponse(
+                "test-access-token",
+                "Bearer"
+            ));
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                                {
+                                  "email": "john@example.com",
+                                  "password": "password123"
+                                }
+                                """))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.accessToken").value("test-access-token"))
+            .andExpect(jsonPath("$.tokenType").value("Bearer"));
+    }
+
+    @Test
+    void shouldReturnBadRequestForInvalidLoginRequest() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                                {
+                                  "email": "invalid-email",
+                                  "password": ""
+                                }
+                                """))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message")
+                .value("Request validation failed"));
+    }
+
+    @Test
+    void shouldReturnUnauthorizedForInvalidCredentials() throws Exception {
+        when(loginService.login(any()))
+            .thenThrow(new BadCredentialsException("Bad credentials"));
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                                {
+                                  "email": "john@example.com",
+                                  "password": "wrong-password"
+                                }
+                                """))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.message")
+                .value("Invalid email or password"));
     }
 }
