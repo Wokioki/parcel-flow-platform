@@ -1,5 +1,7 @@
 package com.wokioki.parcelflow.identity.auth;
 
+import com.wokioki.parcelflow.identity.auth.dto.LoginRequest;
+import com.wokioki.parcelflow.identity.auth.dto.LoginResponse;
 import com.wokioki.parcelflow.identity.auth.dto.RegisterRequest;
 import com.wokioki.parcelflow.identity.auth.dto.RegisterResponse;
 import jakarta.validation.Valid;
@@ -15,9 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final RegistrationService registrationService;
+    private final LoginService loginService;
 
-    public AuthController(RegistrationService registrationService) {
+    public AuthController(
+        RegistrationService registrationService,
+        LoginService loginService
+    ) {
         this.registrationService = registrationService;
+        this.loginService = loginService;
     }
 
     @PostMapping("/register")
@@ -26,5 +33,12 @@ public class AuthController {
         @Valid @RequestBody RegisterRequest request
     ) {
         return registrationService.register(request);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(
+        @Valid @RequestBody LoginRequest request
+    ) {
+        return loginService.login(request);
     }
 }
