@@ -28,6 +28,9 @@ class AuthControllerTest {
     @MockitoBean
     private RegistrationService registrationService;
 
+    @MockitoBean
+    private LoginService loginService;
+
     @Test
     void shouldRegisterUser() throws Exception {
         RegisterResponse response = new RegisterResponse(

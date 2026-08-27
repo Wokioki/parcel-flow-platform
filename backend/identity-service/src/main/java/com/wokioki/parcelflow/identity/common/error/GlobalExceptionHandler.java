@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -59,6 +60,25 @@ public class GlobalExceptionHandler {
             "Request validation failed",
             request.getRequestURI(),
             validationErrors
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiError> handleBadCredentials(
+        BadCredentialsException exception,
+        HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+
+        ApiError error = new ApiError(
+            Instant.now(),
+            status.value(),
+            status.getReasonPhrase(),
+            "Invalid email or password",
+            request.getRequestURI(),
+            null
         );
 
         return ResponseEntity.status(status).body(error);
