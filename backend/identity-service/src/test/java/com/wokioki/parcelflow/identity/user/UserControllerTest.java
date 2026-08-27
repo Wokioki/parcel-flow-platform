@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,8 +45,11 @@ class UserControllerTest {
             ));
 
         mockMvc.perform(get("/api/users/me")
-                .with(user(userId.toString())
-                    .roles("CUSTOMER")))
+                .with(jwt().jwt(jwt -> jwt
+                    .subject(userId.toString())
+                    .claim("email", "john@example.com")
+                    .claim("roles", "ROLE_CUSTOMER")
+                )))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(userId.toString()))
             .andExpect(jsonPath("$.email").value("john@example.com"))
