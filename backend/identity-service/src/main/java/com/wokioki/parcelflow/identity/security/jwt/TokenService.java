@@ -1,5 +1,6 @@
 package com.wokioki.parcelflow.identity.security.jwt;
 
+import com.wokioki.parcelflow.identity.user.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -24,7 +25,10 @@ public class TokenService {
         this.jwtProperties = jwtProperties;
     }
 
-    public String generateAccessToken(Authentication authentication) {
+    public String generateAccessToken(
+        Authentication authentication,
+        User user
+    ) {
         Instant now = Instant.now();
         Instant expiresAt = now.plus(jwtProperties.accessTokenTtl());
 
@@ -35,9 +39,10 @@ public class TokenService {
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuer(jwtProperties.issuer())
-            .subject(authentication.getName())
+            .subject(user.getId().toString())
             .issuedAt(now)
             .expiresAt(expiresAt)
+            .claim("email", user.getEmail())
             .claim("roles", roles)
             .build();
 
@@ -46,4 +51,3 @@ public class TokenService {
         ).getTokenValue();
     }
 }
-

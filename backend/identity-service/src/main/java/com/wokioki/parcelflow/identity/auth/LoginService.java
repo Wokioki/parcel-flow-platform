@@ -3,9 +3,12 @@ package com.wokioki.parcelflow.identity.auth;
 import com.wokioki.parcelflow.identity.auth.dto.LoginRequest;
 import com.wokioki.parcelflow.identity.auth.dto.LoginResponse;
 import com.wokioki.parcelflow.identity.security.jwt.TokenService;
+import com.wokioki.parcelflow.identity.user.User;
+import com.wokioki.parcelflow.identity.user.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,13 +16,16 @@ public class LoginService {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final UserRepository userRepository;
 
     public LoginService(
         AuthenticationManager authenticationManager,
-        TokenService tokenService
+        TokenService tokenService,
+        UserRepository userRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
+        this.userRepository = userRepository;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -36,8 +42,15 @@ public class LoginService {
         Authentication authentication =
             authenticationManager.authenticate(authenticationRequest);
 
+        User user = userRepository.findByEmailIgnoreCase(normalizedEmail)
+            .orElseThrow(() ->
+                new UsernameNotFoundException(
+                    "Authenticated user not found"
+                )
+            );
+
         String accessToken =
-            tokenService.generateAccessToken(authentication);
+            tokenService.generateAccessToken(authentication, user);
 
         return new LoginResponse(
             accessToken,

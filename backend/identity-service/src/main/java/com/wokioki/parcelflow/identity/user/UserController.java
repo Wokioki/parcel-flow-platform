@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -20,8 +22,8 @@ public class UserController {
     public CurrentUserResponse getCurrentUser(
         Authentication authentication
     ) {
-        return userQueryService.getCurrentUser(
-            authentication.getName()
-        );
+        UUID userId = UUID.fromString(authentication.getName());
+
+        return userQueryService.getCurrentUser(userId);
     }
 }

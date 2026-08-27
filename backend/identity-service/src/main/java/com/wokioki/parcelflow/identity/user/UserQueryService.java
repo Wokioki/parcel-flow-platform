@@ -5,6 +5,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 public class UserQueryService {
 
@@ -15,10 +17,12 @@ public class UserQueryService {
     }
 
     @Transactional(readOnly = true)
-    public CurrentUserResponse getCurrentUser(String email) {
-        User user = userRepository.findByEmailIgnoreCase(email)
+    public CurrentUserResponse getCurrentUser(UUID userId) {
+        User user = userRepository.findById(userId)
             .orElseThrow(() ->
-                new UsernameNotFoundException("Authenticated user not found")
+                new UsernameNotFoundException(
+                    "Authenticated user not found"
+                )
             );
 
         return new CurrentUserResponse(

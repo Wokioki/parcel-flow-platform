@@ -35,7 +35,7 @@ class UserControllerTest {
     void shouldReturnCurrentUser() throws Exception {
         UUID userId = UUID.randomUUID();
 
-        when(userQueryService.getCurrentUser("john@example.com"))
+        when(userQueryService.getCurrentUser(userId))
             .thenReturn(new CurrentUserResponse(
                 userId,
                 "john@example.com",
@@ -45,7 +45,7 @@ class UserControllerTest {
             ));
 
         mockMvc.perform(get("/api/users/me")
-                .with(user("john@example.com")
+                .with(user(userId.toString())
                     .roles("CUSTOMER")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(userId.toString()))
