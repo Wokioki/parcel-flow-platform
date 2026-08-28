@@ -7,6 +7,7 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "security.jwt")
 public record JwtProperties(
     String issuer,
-    Duration accessTokenTtl
+    Duration accessTokenTtl,
+    Duration refreshTokenTtl
 ) {
 }
