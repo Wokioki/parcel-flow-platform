@@ -26,8 +26,11 @@ public class RefreshTokenService {
 
     @Transactional
     public String createRefreshToken(User user) {
-        String rawToken = refreshTokenGenerator.generateToken();
-        String tokenHash = refreshTokenGenerator.hashToken(rawToken);
+        String rawToken =
+            refreshTokenGenerator.generateToken();
+
+        String tokenHash =
+            refreshTokenGenerator.hashToken(rawToken);
 
         Instant expiresAt = Instant.now()
             .plus(jwtProperties.refreshTokenTtl());
@@ -41,5 +44,52 @@ public class RefreshTokenService {
         refreshTokenRepository.save(refreshToken);
 
         return rawToken;
+    }
+
+    @Transactional
+    public RefreshTokenRotation rotate(String rawToken) {
+        String tokenHash =
+            refreshTokenGenerator.hashToken(rawToken);
+
+        RefreshToken currentToken =
+            refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(
+                    InvalidRefreshTokenException::new
+                );
+
+        if (!currentToken.isActive()) {
+            throw new InvalidRefreshTokenException();
+        }
+
+        User user = currentToken.getUser();
+
+        String newRawToken =
+            refreshTokenGenerator.generateToken();
+
+        String newTokenHash =
+            refreshTokenGenerator.hashToken(newRawToken);
+
+        RefreshToken replacement = new RefreshToken(
+            user,
+            newTokenHash,
+            Instant.now().plus(
+                jwtProperties.refreshTokenTtl()
+            )
+        );
+
+        refreshTokenRepository.save(replacement);
+
+        currentToken.replaceWith(replacement);
+
+        return new RefreshTokenRotation(
+            user,
+            newRawToken
+        );
+    }
+
+    public record RefreshTokenRotation(
+        User user,
+        String refreshToken
+    ) {
     }
 }

@@ -2,6 +2,7 @@ package com.wokioki.parcelflow.identity.auth.refreshtoken;
 
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -17,6 +18,7 @@ public class RefreshTokenGenerator {
 
     public String generateToken() {
         byte[] tokenBytes = new byte[TOKEN_SIZE_BYTES];
+
         secureRandom.nextBytes(tokenBytes);
 
         return Base64.getUrlEncoder()
@@ -30,7 +32,7 @@ public class RefreshTokenGenerator {
                 MessageDigest.getInstance("SHA-256");
 
             byte[] hash = digest.digest(
-                token.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+                token.getBytes(StandardCharsets.UTF_8)
             );
 
             return HexFormat.of().formatHex(hash);
