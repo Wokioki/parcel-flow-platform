@@ -107,6 +107,7 @@ class AuthControllerTest {
         when(loginService.login(any()))
             .thenReturn(new LoginResponse(
                 "test-access-token",
+                "test-refresh-token",
                 "Bearer"
             ));
 
@@ -120,6 +121,7 @@ class AuthControllerTest {
                                 """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.accessToken").value("test-access-token"))
+            .andExpect(jsonPath("$.refreshToken").value("test-refresh-token"))
             .andExpect(jsonPath("$.tokenType").value("Bearer"));
     }
 

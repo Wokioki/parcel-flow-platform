@@ -2,6 +2,7 @@ package com.wokioki.parcelflow.identity.auth;
 
 import com.wokioki.parcelflow.identity.auth.dto.LoginRequest;
 import com.wokioki.parcelflow.identity.auth.dto.LoginResponse;
+import com.wokioki.parcelflow.identity.auth.refreshtoken.RefreshTokenService;
 import com.wokioki.parcelflow.identity.security.jwt.TokenService;
 import com.wokioki.parcelflow.identity.user.User;
 import com.wokioki.parcelflow.identity.user.UserRepository;
@@ -16,15 +17,18 @@ public class LoginService {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final RefreshTokenService refreshTokenService;
     private final UserRepository userRepository;
 
     public LoginService(
         AuthenticationManager authenticationManager,
         TokenService tokenService,
+        RefreshTokenService refreshTokenService,
         UserRepository userRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
+        this.refreshTokenService = refreshTokenService;
         this.userRepository = userRepository;
     }
 
@@ -52,8 +56,12 @@ public class LoginService {
         String accessToken =
             tokenService.generateAccessToken(authentication, user);
 
+        String refreshToken =
+            refreshTokenService.createRefreshToken(user);
+
         return new LoginResponse(
             accessToken,
+            refreshToken,
             "Bearer"
         );
     }
