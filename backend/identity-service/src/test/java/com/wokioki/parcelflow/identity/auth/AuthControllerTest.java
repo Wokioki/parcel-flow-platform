@@ -37,6 +37,9 @@ class AuthControllerTest {
     @MockitoBean
     private RefreshService refreshService;
 
+    @MockitoBean
+    private LogoutService logoutService;
+
     @Test
     void shouldRegisterUser() throws Exception {
         RegisterResponse response = new RegisterResponse(UUID.randomUUID(), "john@example.com", "John", "Doe", Role.CUSTOMER);

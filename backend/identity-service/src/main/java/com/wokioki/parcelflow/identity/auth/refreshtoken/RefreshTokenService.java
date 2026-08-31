@@ -47,6 +47,24 @@ public class RefreshTokenService {
     }
 
     @Transactional
+    public void revoke(String rawToken) {
+        String tokenHash =
+            refreshTokenGenerator.hashToken(rawToken);
+
+        RefreshToken refreshToken =
+            refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(
+                    InvalidRefreshTokenException::new
+                );
+
+        if (!refreshToken.isActive()) {
+            throw new InvalidRefreshTokenException();
+        }
+
+        refreshToken.revoke();
+    }
+
+    @Transactional
     public RefreshTokenRotation rotate(String rawToken) {
         String tokenHash =
             refreshTokenGenerator.hashToken(rawToken);

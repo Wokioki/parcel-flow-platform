@@ -16,15 +16,18 @@ public class AuthController {
     private final RegistrationService registrationService;
     private final LoginService loginService;
     private final RefreshService refreshService;
+    private final LogoutService logoutService;
 
     public AuthController(
         RegistrationService registrationService,
         LoginService loginService,
-        RefreshService refreshService
+        RefreshService refreshService,
+        LogoutService logoutService
     ) {
         this.registrationService = registrationService;
         this.loginService = loginService;
         this.refreshService = refreshService;
+        this.logoutService = logoutService;
     }
 
     @PostMapping("/register")
@@ -47,5 +50,13 @@ public class AuthController {
         @Valid @RequestBody RefreshRequest request
     ) {
         return refreshService.refresh(request);
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(
+        @Valid @RequestBody LogoutRequest request
+    ) {
+        logoutService.logout(request);
     }
 }
