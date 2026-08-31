@@ -1,6 +1,7 @@
 package com.wokioki.parcelflow.identity.common.error;
 
 import com.wokioki.parcelflow.identity.auth.exception.EmailAlreadyExistsException;
+import com.wokioki.parcelflow.identity.auth.refreshtoken.InvalidRefreshTokenException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -77,6 +78,25 @@ public class GlobalExceptionHandler {
             status.value(),
             status.getReasonPhrase(),
             "Invalid email or password",
+            request.getRequestURI(),
+            null
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ApiError> handleInvalidRefreshToken(
+        InvalidRefreshTokenException exception,
+        HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+
+        ApiError error = new ApiError(
+            Instant.now(),
+            status.value(),
+            status.getReasonPhrase(),
+            exception.getMessage(),
             request.getRequestURI(),
             null
         );

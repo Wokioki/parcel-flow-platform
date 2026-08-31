@@ -54,7 +54,7 @@ public class LoginService {
             );
 
         String accessToken =
-            tokenService.generateAccessToken(authentication, user);
+            tokenService.generateAccessToken(user);
 
         String refreshToken =
             refreshTokenService.createRefreshToken(user);
