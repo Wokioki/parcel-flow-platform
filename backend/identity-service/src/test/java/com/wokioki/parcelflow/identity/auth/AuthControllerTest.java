@@ -83,6 +83,51 @@ class AuthControllerTest {
     }
 
     @Test
+    void shouldLogoutUser() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "refreshToken": "valid-refresh-token"
+                    }
+                    """))
+            .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldReturnUnauthorizedForInvalidLogoutToken() throws Exception {
+        doThrow(new InvalidRefreshTokenException())
+            .when(logoutService)
+            .logout(any());
+
+        mockMvc.perform(post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "refreshToken": "invalid-refresh-token"
+                    }
+                    """))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.message")
+                .value("Invalid or expired refresh token"));
+    }
+
+    @Test
+    void shouldReturnBadRequestForEmptyLogoutToken() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "refreshToken": ""
+                    }
+                    """))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message")
+                .value("Request validation failed"));
+    }
+
+    @Test
     void shouldLoginUser() throws Exception {
         when(loginService.login(any())).thenReturn(new LoginResponse("test-access-token", "test-refresh-token", "Bearer"));
 
