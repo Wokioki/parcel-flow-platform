@@ -1,6 +1,10 @@
 package com.wokioki.parcelflow.identity.auth;
 
-import com.wokioki.parcelflow.identity.auth.refreshtoken.*;
+import com.wokioki.parcelflow.identity.auth.refreshtoken.InvalidRefreshTokenException;
+import com.wokioki.parcelflow.identity.auth.refreshtoken.RefreshToken;
+import com.wokioki.parcelflow.identity.auth.refreshtoken.RefreshTokenGenerator;
+import com.wokioki.parcelflow.identity.auth.refreshtoken.RefreshTokenRepository;
+import com.wokioki.parcelflow.identity.auth.refreshtoken.RefreshTokenService;
 import com.wokioki.parcelflow.identity.security.jwt.JwtProperties;
 import com.wokioki.parcelflow.identity.user.Role;
 import com.wokioki.parcelflow.identity.user.User;
@@ -14,8 +18,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenServiceTest {
@@ -61,11 +70,13 @@ class RefreshTokenServiceTest {
         when(refreshTokenGenerator.hashToken("raw-token"))
             .thenReturn("hashed-token");
 
-        String result = refreshTokenService.createRefreshToken(user);
+        String result =
+            refreshTokenService.createRefreshToken(user);
 
         assertEquals("raw-token", result);
 
-        verify(refreshTokenRepository).save(any(RefreshToken.class));
+        verify(refreshTokenRepository)
+            .save(any(RefreshToken.class));
     }
 
     @Test
@@ -79,7 +90,7 @@ class RefreshTokenServiceTest {
         when(refreshTokenGenerator.hashToken("old-raw-token"))
             .thenReturn("old-hash");
 
-        when(refreshTokenRepository.findByTokenHash("old-hash"))
+        when(refreshTokenRepository.findByTokenHashWithUser("old-hash"))
             .thenReturn(Optional.of(currentToken));
 
         when(refreshTokenGenerator.generateToken())
@@ -92,12 +103,18 @@ class RefreshTokenServiceTest {
             refreshTokenService.rotate("old-raw-token");
 
         assertEquals(user, result.user());
-        assertEquals("new-raw-token", result.refreshToken());
+        assertEquals(
+            "new-raw-token",
+            result.refreshToken()
+        );
 
         assertTrue(currentToken.isRevoked());
-        assertNotNull(currentToken.getReplacedByToken());
+        assertNotNull(
+            currentToken.getReplacedByToken()
+        );
 
-        verify(refreshTokenRepository).save(any(RefreshToken.class));
+        verify(refreshTokenRepository)
+            .save(any(RefreshToken.class));
     }
 
     @Test
@@ -105,12 +122,14 @@ class RefreshTokenServiceTest {
         when(refreshTokenGenerator.hashToken("unknown-token"))
             .thenReturn("unknown-hash");
 
-        when(refreshTokenRepository.findByTokenHash("unknown-hash"))
+        when(refreshTokenRepository.findByTokenHashWithUser("unknown-hash"))
             .thenReturn(Optional.empty());
 
         assertThrows(
             InvalidRefreshTokenException.class,
-            () -> refreshTokenService.rotate("unknown-token")
+            () -> refreshTokenService.rotate(
+                "unknown-token"
+            )
         );
     }
 
@@ -127,12 +146,14 @@ class RefreshTokenServiceTest {
         when(refreshTokenGenerator.hashToken("revoked-token"))
             .thenReturn("revoked-hash");
 
-        when(refreshTokenRepository.findByTokenHash("revoked-hash"))
+        when(refreshTokenRepository.findByTokenHashWithUser("revoked-hash"))
             .thenReturn(Optional.of(revokedToken));
 
         assertThrows(
             InvalidRefreshTokenException.class,
-            () -> refreshTokenService.rotate("revoked-token")
+            () -> refreshTokenService.rotate(
+                "revoked-token"
+            )
         );
     }
 
@@ -147,12 +168,14 @@ class RefreshTokenServiceTest {
         when(refreshTokenGenerator.hashToken("expired-token"))
             .thenReturn("expired-hash");
 
-        when(refreshTokenRepository.findByTokenHash("expired-hash"))
+        when(refreshTokenRepository.findByTokenHashWithUser("expired-hash"))
             .thenReturn(Optional.of(expiredToken));
 
         assertThrows(
             InvalidRefreshTokenException.class,
-            () -> refreshTokenService.rotate("expired-token")
+            () -> refreshTokenService.rotate(
+                "expired-token"
+            )
         );
     }
 
