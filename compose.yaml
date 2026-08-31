@@ -18,5 +18,23 @@ services:
       timeout: 5s
       retries: 10
 
+  shipment-db:
+    image: postgres:17-alpine
+    container_name: parcel-flow-shipment-db
+    environment:
+      POSTGRES_DB: shipment_db
+      POSTGRES_USER: shipment_user
+      POSTGRES_PASSWORD: shipment_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - shipment-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shipment_user -d shipment_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
   identity-db-data:
+  shipment-db-data:

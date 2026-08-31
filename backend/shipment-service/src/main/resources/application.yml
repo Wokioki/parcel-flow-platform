@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: shipment-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5434/shipment_db
+    username: shipment_user
+    password: shipment_password
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

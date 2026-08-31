@@ -16,6 +16,7 @@
 
   <modules>
     <module>identity-service</module>
+    <module>shipment-service</module>
   </modules>
 
 </project>
